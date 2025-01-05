@@ -1,20 +1,18 @@
-package com.yogeshpaliyal.backupapp.reciever
+package com.yogeshpaliyal.comrade.reciever
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import com.yogeshpaliyal.common.CLIENT_APP_PACKAGE_NAME
-import com.yogeshpaliyal.common.IA_BACKUP_ADDED_TO_QUEUE
-import com.yogeshpaliyal.common.IA_COMPANION_SETUP_COMPLETED
-import com.yogeshpaliyal.common.SETUP_COMPLETED
-import com.yogeshpaliyal.common.SHARING_CONTENT_URI
+import com.yogeshpaliyal.comrade.common.CLIENT_APP_PACKAGE_NAME
+import com.yogeshpaliyal.comrade.common.IA_BACKUP_ADDED_TO_QUEUE
+import com.yogeshpaliyal.comrade.common.IA_COMPANION_SETUP_COMPLETED
+import com.yogeshpaliyal.comrade.common.SHARING_CONTENT_URI
 import java.io.File
 import java.io.IOException
-import java.io.InputStream
 
 
-class IsAppSetupCompleted: BroadcastReceiver() {
+class MainAppReceiver: BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         // Check if main App exists
         // Check if Google Drive Logged in Main App
@@ -40,16 +38,23 @@ class IsAppSetupCompleted: BroadcastReceiver() {
                     e.printStackTrace()
                 }
             }
+
+            if (!isSetupComplete) {
+                comradeNotConfigured(context, callingApp)
+            }
         }
 
+
+    }
+
+    private fun comradeNotConfigured(context: Context?, targetApp: String){
         val mIntent = Intent()
         mIntent.action = IA_COMPANION_SETUP_COMPLETED
-        mIntent.putExtra(SETUP_COMPLETED, isSetupComplete)
-        mIntent.`package` = callingApp
+        mIntent.`package` = targetApp
         context?.sendBroadcast(mIntent)
     }
 
-    fun backupAddedToQueue(context: Context?, targetApp: String){
+    private fun backupAddedToQueue(context: Context?, targetApp: String){
         val mIntent = Intent()
         mIntent.action = IA_BACKUP_ADDED_TO_QUEUE
         mIntent.`package` = targetApp

@@ -1,4 +1,4 @@
-package com.yogeshpaliyal.backupapp
+package com.yogeshpaliyal.comrade
 
 import org.junit.Test
 

@@ -10,23 +10,23 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.BackupApp"
+        android:theme="@style/Theme.Comrade"
         tools:targetApi="31">
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.BackupApp">
+            android:theme="@style/Theme.Comrade">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <receiver android:name="com.yogeshpaliyal.backupapp.reciever.IsAppSetupCompleted"
+        <receiver android:name="com.yogeshpaliyal.comrade.reciever.MainAppReceiver"
             android:exported="true">
             <intent-filter>
-                <action android:name="com.yogeshpaliyal.backupapp.companion.setup.completed"/>
+                <action android:name="com.yogeshpaliyal.comrade.backup.request"/>
             </intent-filter>
         </receiver>
     </application>

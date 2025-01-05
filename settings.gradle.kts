@@ -19,7 +19,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "BackupApp"
+rootProject.name = "Comrade"
 include(":app")
 include(":library")
 include(":common")

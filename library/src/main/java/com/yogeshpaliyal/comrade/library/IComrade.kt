@@ -1,8 +1,8 @@
-package com.yogeshpaliyal.library
+package com.yogeshpaliyal.comrade.library
 
 import java.io.File
 
-interface IBackupApp {
+interface IComrade {
     fun backupApp(file: File)
     fun restoreApp()
     fun isCompanionAppInstalled(): Boolean

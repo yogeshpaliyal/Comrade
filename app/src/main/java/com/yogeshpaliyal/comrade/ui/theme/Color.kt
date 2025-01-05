@@ -1,4 +1,4 @@
-package com.yogeshpaliyal.backupapp.ui.theme
+package com.yogeshpaliyal.comrade.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

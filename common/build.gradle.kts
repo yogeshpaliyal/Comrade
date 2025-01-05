@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.yogeshpaliyal.common"
+    namespace = "com.yogeshpaliyal.comrade.common"
     compileSdk = 34
 
     defaultConfig {

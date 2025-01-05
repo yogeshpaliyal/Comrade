@@ -1,4 +1,4 @@
-# BackupApp
+# Comrade 🤝
 
 ```mermaid
 sequenceDiagram
@@ -30,8 +30,8 @@ implementation "testing:0.0.1"
 ```
 
 ```kotlin
-val backupApp = BackupApp(context, listener)
-backupApp.backup(fileToBackup)
+val comrade = Comrade(context, listener)
+comrade.backup(fileToBackup)
 ```
 
 

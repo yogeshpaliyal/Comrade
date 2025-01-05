@@ -12,19 +12,18 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.yogeshpaliyal.library.BackupApp
-import com.yogeshpaliyal.library.BackupAppListener
+import com.yogeshpaliyal.comrade.library.Comrade
+import com.yogeshpaliyal.comrade.library.ComradeListener
 import com.yogeshpaliyal.sampleapp.ui.theme.BackupAppTheme
 import kotlinx.coroutines.launch
 import java.io.File
 
-class MainActivity : ComponentActivity(), BackupAppListener {
-    private val backupApp by lazy {
-        BackupApp(this, this)
+class MainActivity : ComponentActivity(), ComradeListener {
+    private val comrade by lazy {
+        Comrade(this, this)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,7 +48,7 @@ class MainActivity : ComponentActivity(), BackupAppListener {
 
         Column(modifier = modifier) {
             Text(
-                text = if (backupApp.isCompanionAppInstalled()) "Companion app present" else "Companion app is not present"
+                text = if (comrade.isCompanionAppInstalled()) "Companion app present" else "Companion app is not present"
             )
             Button(onClick = {
 
@@ -59,7 +58,7 @@ class MainActivity : ComponentActivity(), BackupAppListener {
                         newFile.createNewFile()
                         newFile.writeText("Hello World")
                     }
-                    backupApp.backupApp(newFile)
+                    comrade.backupApp(newFile)
                 }
 
 
@@ -71,11 +70,12 @@ class MainActivity : ComponentActivity(), BackupAppListener {
         }
     }
 
-    override fun backupAppIsNotInstalled() {
+
+    override fun comradeUnavailable() {
         Toast.makeText(this, "Companion App is Not Installed", Toast.LENGTH_SHORT).show()
     }
 
-    override fun backupAppIsNotConfigured() {
+    override fun comradeIsNotConfigured() {
         Toast.makeText(this, "Companion App is not Setup correctly", Toast.LENGTH_SHORT).show()
     }
 

@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.yogeshpaliyal.backupapp"
+    namespace = "com.yogeshpaliyal.comrade"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.yogeshpaliyal.backupapp"
+        applicationId = "com.yogeshpaliyal.comrade"
         minSdk = 22
         targetSdk = 35
         versionCode = 1
