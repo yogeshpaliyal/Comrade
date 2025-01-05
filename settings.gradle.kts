@@ -21,3 +21,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "BackupApp"
 include(":app")
+include(":library")
+include(":common")
+include(":sampleapp")

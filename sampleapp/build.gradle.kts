@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.yogeshpaliyal.backupapp"
+    namespace = "com.yogeshpaliyal.sampleapp"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.yogeshpaliyal.backupapp"
+        applicationId = "com.yogeshpaliyal.sampleapp"
         minSdk = 22
         targetSdk = 35
         versionCode = 1
@@ -40,7 +40,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":common"))
+    implementation(project(":library"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
