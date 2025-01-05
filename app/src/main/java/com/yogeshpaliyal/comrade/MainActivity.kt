@@ -30,6 +30,15 @@ import com.yogeshpaliyal.comrade.ui.screen.Homepage
 import com.yogeshpaliyal.comrade.ui.theme.ComradeTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.serialization.Serializable
+import androidx.appcompat.app.AppCompatActivity;
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.api.client.extensions.android.http.AndroidHttp
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
+import com.google.api.client.json.gson.GsonFactory
+import com.google.api.services.drive.Drive
+import com.google.api.services.drive.DriveScopes
+import com.yogeshpaliyal.comrade.utils.DriveServiceHelper
+import javax.inject.Inject
 
 
 data class TopLevelRoute<T : Any>(val name: String, val route: T, val icon: ImageVector)
@@ -47,10 +56,46 @@ val topLevelRoutes = listOf(
 
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
+
+    private var mDriveService: DriveServiceHelper? = null
+
+    private fun initiateGoogleDrive() {
+        val googleAccount = GoogleSignIn.getLastSignedInAccount(this)
+        mDriveService = googleAccount?.account?.let {
+            val credential =
+                GoogleAccountCredential.usingOAuth2(
+                    this, setOf(DriveScopes.DRIVE_FILE)
+                )
+            credential.setSelectedAccount(it)
+
+            val googleDriveService =
+                Drive.Builder(
+                    AndroidHttp.newCompatibleTransport(),
+                    GsonFactory(),
+                    credential
+                )
+                    .setApplicationName("Drive API Migration")
+                    .build()
+
+            DriveServiceHelper(googleDriveService)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        enableEdgeToEdge()
+        initiateGoogleDrive()
+        if (mDriveService == null) {
+            val dialog = GDriveLoginDialog()
+            dialog.setListener() {
+                if (it != null) {
+                    mDriveService = it
+                }
+                dialog.dismiss()
+            }
+            dialog.show(supportFragmentManager, "GDriveLoginDialog")
+        }
+
         setContent {
             ComradeTheme {
                 val navController = rememberNavController()
