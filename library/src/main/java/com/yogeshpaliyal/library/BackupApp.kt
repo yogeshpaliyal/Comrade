@@ -9,8 +9,8 @@ import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import com.yogeshpaliyal.common.CLIENT_APP_PACKAGE_NAME
 import com.yogeshpaliyal.common.COMPANION_APP_PACKAGE_NAME
-import com.yogeshpaliyal.common.IS_APP_SETUP_COMPLETED
-import com.yogeshpaliyal.common.SETUP_IS_COMPLETED
+import com.yogeshpaliyal.common.IA_COMPANION_SETUP_COMPLETED
+import com.yogeshpaliyal.common.SETUP_COMPLETED
 
 
 class BackupApp(private val mContext: Context, private val mListener: BackupAppListener) :
@@ -21,7 +21,7 @@ class BackupApp(private val mContext: Context, private val mListener: BackupAppL
 
     private val myBroadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            val isAppSetup = intent?.getBooleanExtra(SETUP_IS_COMPLETED, false)
+            val isAppSetup = intent?.getBooleanExtra(SETUP_COMPLETED, false)
             if (isAppSetup?.not() == true) {
                 mListener.backupAppIsNotConfigured()
             }
@@ -31,7 +31,7 @@ class BackupApp(private val mContext: Context, private val mListener: BackupAppL
 
     override fun backupApp() {
 
-        if (isPackageInstalled().not()) {
+        if (isCompanionAppInstalled().not()) {
             mListener.backupAppIsNotInstalled()
             return
         }
@@ -41,13 +41,13 @@ class BackupApp(private val mContext: Context, private val mListener: BackupAppL
             COMPANION_APP_PACKAGE_NAME,
             "com.yogeshpaliyal.backupapp.reciever.IsAppSetupCompleted"
         )
-        intent.action = IS_APP_SETUP_COMPLETED
+        intent.action = IA_COMPANION_SETUP_COMPLETED
         intent.`package` = COMPANION_APP_PACKAGE_NAME
         intent.putExtra(CLIENT_APP_PACKAGE_NAME, mContext.packageName)
         mContext.sendBroadcast(intent)
 
         val intentFilter = IntentFilter()
-        intentFilter.addAction(SETUP_IS_COMPLETED)
+        intentFilter.addAction(IA_COMPANION_SETUP_COMPLETED)
         ContextCompat.registerReceiver(
             mContext,
             myBroadcastReceiver,
@@ -55,14 +55,13 @@ class BackupApp(private val mContext: Context, private val mListener: BackupAppL
             ContextCompat.RECEIVER_EXPORTED
         )
 
-        // Wait for 1 second if call back is not called then app is not installed
     }
 
     override fun restoreApp() {
 
     }
 
-    private fun isPackageInstalled(): Boolean {
+    override fun isCompanionAppInstalled(): Boolean {
         try {
             mContext.packageManager.getPackageInfo(COMPANION_APP_PACKAGE_NAME, 0)
             return true

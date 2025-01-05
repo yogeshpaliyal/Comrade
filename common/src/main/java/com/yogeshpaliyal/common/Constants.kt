@@ -2,6 +2,16 @@ package com.yogeshpaliyal.common
 
 
 const val COMPANION_APP_PACKAGE_NAME = "com.yogeshpaliyal.backupapp"
-const val IS_APP_SETUP_COMPLETED = "BackupApp.isAppSetupCompleted"
+
+
+/**
+ * Intent Actions
+ */
+const val IA_COMPANION_SETUP_COMPLETED = "$COMPANION_APP_PACKAGE_NAME.companion.setup.completed"
+
+
+/**
+ * Extra Parameters for intents
+ */
 const val CLIENT_APP_PACKAGE_NAME = "clientAppPackageName"
-const val SETUP_IS_COMPLETED = "BackupApp.setupIsCompleted"
+const val SETUP_COMPLETED = "clientAppPackageName"

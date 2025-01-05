@@ -13,15 +13,15 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import com.yogeshpaliyal.library.BackupApp
 import com.yogeshpaliyal.library.BackupAppListener
 import com.yogeshpaliyal.sampleapp.ui.theme.BackupAppTheme
 
 class MainActivity : ComponentActivity(), BackupAppListener {
-    private val backupApp  by lazy {
+    private val backupApp by lazy {
         BackupApp(this, this)
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -35,10 +35,14 @@ class MainActivity : ComponentActivity(), BackupAppListener {
             }
         }
     }
+
     @Composable
     fun Greeting(modifier: Modifier = Modifier) {
         Column(modifier = modifier) {
-            Button(onClick = {backupApp.backupApp()}){
+            Text(
+                text = if (backupApp.isCompanionAppInstalled()) "Companion app present" else "Companion app is not present"
+            )
+            Button(onClick = { backupApp.backupApp() }) {
                 Text(
                     text = "Backup"
                 )
