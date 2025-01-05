@@ -22,6 +22,19 @@ end
 ```
 
 
+## How to Use
+Implement the BackupAppSDK in your app and call the backup method.
+
+```groovy
+implementation "testing:0.0.1"
+```
+
+```kotlin
+val backupApp = BackupApp(context, listener)
+backupApp.backup(fileToBackup)
+```
+
+
 ## Discussion Thread
 - https://bsky.app/profile/yogeshpaliyal.com/post/3levtmlemc22g
 - https://www.reddit.com/r/androiddev/s/LYNsyXnrdI
