@@ -1,4 +1,4 @@
-# Comrade 🤝
+# Comrade 🤝 (Work In Progress)
 
 ```mermaid
 sequenceDiagram
