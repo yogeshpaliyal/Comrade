@@ -26,7 +26,7 @@
         <receiver android:name="com.yogeshpaliyal.backupapp.reciever.IsAppSetupCompleted"
             android:exported="true">
             <intent-filter>
-                <action android:name="BackupApp.isAppSetupCompleted"/>
+                <action android:name="com.yogeshpaliyal.backupapp.companion.setup.completed"/>
             </intent-filter>
         </receiver>
     </application>
