@@ -22,12 +22,14 @@ end
 ```
 
 
-## How to Use
-Implement the BackupAppSDK in your app and call the backup method.
+## How to Use (Not yet Live)
+Implement the Comrade SDK in your app and call the backup method.
 
 ```groovy
-implementation "testing:0.0.1"
+implementation "com.yogeshpaliyal:comrade-sdk:0.0.1"
 ```
+
+Initialize the Comrade
 
 ```kotlin
 val comrade = Comrade(context, listener)
