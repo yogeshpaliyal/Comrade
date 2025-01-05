@@ -20,3 +20,8 @@ end
     BackupApp-->>-BackupAppSDK: Success callback for file backed up
     BackupAppSDK-->>-ClientApp: Backup completed
 ```
+
+
+## Discussion Thread
+- https://bsky.app/profile/yogeshpaliyal.com/post/3levtmlemc22g
+- https://www.reddit.com/r/androiddev/s/LYNsyXnrdI
