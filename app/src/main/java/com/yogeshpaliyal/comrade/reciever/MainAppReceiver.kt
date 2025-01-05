@@ -3,21 +3,29 @@ package com.yogeshpaliyal.comrade.reciever
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import com.yogeshpaliyal.comrade.common.CLIENT_APP_PACKAGE_NAME
 import com.yogeshpaliyal.comrade.common.IA_BACKUP_ADDED_TO_QUEUE
 import com.yogeshpaliyal.comrade.common.IA_COMPANION_SETUP_COMPLETED
 import com.yogeshpaliyal.comrade.common.SHARING_CONTENT_URI
+import dagger.hilt.android.AndroidEntryPoint
+import data.ComradeQueries
 import java.io.File
 import java.io.IOException
+import javax.inject.Inject
 
 
+@AndroidEntryPoint
 class MainAppReceiver: BroadcastReceiver() {
+
+    @Inject
+    lateinit var queries: ComradeQueries
+
     override fun onReceive(context: Context?, intent: Intent?) {
         // Check if main App exists
         // Check if Google Drive Logged in Main App
         val callingApp = intent?.getStringExtra(CLIENT_APP_PACKAGE_NAME) ?: return
-
 
         val isSetupComplete = true
 
@@ -33,6 +41,16 @@ class MainAppReceiver: BroadcastReceiver() {
                             it.copyTo(output)
                         }
                     }
+
+                    val sig =
+                        context?.packageManager?.getPackageInfo(
+                            callingApp,
+                            PackageManager.GET_SIGNATURES
+                        )?.signatures?.firstOrNull()
+
+
+                    queries.insertFileInfo(callingApp, sig?.toCharsString() ?: "", null, newFile.path, System.currentTimeMillis())
+
                     backupAddedToQueue(context, callingApp)
                 } catch (e: IOException) {
                     e.printStackTrace()
