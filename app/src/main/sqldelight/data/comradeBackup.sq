@@ -1,0 +1,26 @@
+import com.yogeshpaliyal.comrade.types.BackupStatus;
+
+CREATE TABLE comradeBackup(
+  id INTEGER PRIMARY KEY NOT NULL,
+  packageName TEXT NOT NULL,
+  packageSignature TEXT NOT NULL,
+  filePath TEXT,
+  localFilePath TEXT NOT NULL,
+  dateTime INTEGER NOT NULL,
+  backupStatus INTEGER AS BackupStatus
+);
+
+insertFileInfo:
+INSERT INTO comradeBackup (packageName, packageSignature, filePath, localFilePath, dateTime, backupStatus)
+VALUES (?, ?, ?, ?, ?, ?);
+
+
+changeBackupStatus:
+UPDATE comradeBackup SET backupStatus = :backupStatus WHERE id = :id;
+
+
+setFilePath:
+UPDATE comradeBackup SET filePath = :filePath WHERE id = :id;
+
+getAllFilesList:
+SELECT * FROM comradeBackup;

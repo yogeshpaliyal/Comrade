@@ -9,8 +9,9 @@ import com.yogeshpaliyal.comrade.common.CLIENT_APP_PACKAGE_NAME
 import com.yogeshpaliyal.comrade.common.IA_BACKUP_ADDED_TO_QUEUE
 import com.yogeshpaliyal.comrade.common.IA_COMPANION_SETUP_COMPLETED
 import com.yogeshpaliyal.comrade.common.SHARING_CONTENT_URI
+import com.yogeshpaliyal.comrade.types.BackupStatus
 import dagger.hilt.android.AndroidEntryPoint
-import data.ComradeQueries
+import data.ComradeBackupQueries
 import java.io.File
 import java.io.IOException
 import javax.inject.Inject
@@ -20,7 +21,7 @@ import javax.inject.Inject
 class MainAppReceiver: BroadcastReceiver() {
 
     @Inject
-    lateinit var queries: ComradeQueries
+    lateinit var queries: ComradeBackupQueries
 
     override fun onReceive(context: Context?, intent: Intent?) {
         // Check if main App exists
@@ -49,7 +50,7 @@ class MainAppReceiver: BroadcastReceiver() {
                         )?.signatures?.firstOrNull()
 
 
-                    queries.insertFileInfo(callingApp, sig?.toCharsString() ?: "", null, newFile.path, System.currentTimeMillis())
+                    queries.insertFileInfo(callingApp, sig?.toCharsString() ?: "", null, newFile.path, System.currentTimeMillis(), BackupStatus.BACKUP_PENDING)
 
                     backupAddedToQueue(context, callingApp)
                 } catch (e: IOException) {
