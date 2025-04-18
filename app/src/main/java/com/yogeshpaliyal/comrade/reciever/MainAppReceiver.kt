@@ -9,13 +9,10 @@ import com.yogeshpaliyal.comrade.common.CLIENT_APP_PACKAGE_NAME
 import com.yogeshpaliyal.comrade.common.IA_BACKUP_ADDED_TO_QUEUE
 import com.yogeshpaliyal.comrade.common.IA_BACKUP_REQUEST
 import com.yogeshpaliyal.comrade.common.IA_COMPANION_SETUP_COMPLETED
-import com.yogeshpaliyal.comrade.common.SHARING_CONTENT_URI
 import com.yogeshpaliyal.comrade.reciever.handlers.BackupBroadcastHandler
-import com.yogeshpaliyal.comrade.types.BackupStatus
+import com.yogeshpaliyal.comrade.reciever.handlers.IBroadcastReceiverHandler
 import dagger.hilt.android.AndroidEntryPoint
 import data.ComradeBackupQueries
-import java.io.File
-import java.io.IOException
 import javax.inject.Inject
 
 
@@ -24,6 +21,9 @@ class MainAppReceiver : BroadcastReceiver() {
 
     @Inject
     lateinit var queries: ComradeBackupQueries
+
+    @Inject
+    lateinit var backupBroadcastHandler: BackupBroadcastHandler
 
     override fun onReceive(context: Context?, intent: Intent?) {
         context ?: return
@@ -40,14 +40,14 @@ class MainAppReceiver : BroadcastReceiver() {
         }
 
         // Validate the calling app signature
-        val request = when(intent.action) {
+        val request: IBroadcastReceiverHandler? = when(intent.action) {
             IA_BACKUP_REQUEST -> {
-                BackupBroadcastHandler()
+                backupBroadcastHandler
             }
             else -> null
         }
 
-        request?.handleAction(context, intent)
+        request?.handleAction(context, intent, callingApp)
 
 
     }
@@ -59,11 +59,6 @@ class MainAppReceiver : BroadcastReceiver() {
         context?.sendBroadcast(mIntent)
     }
 
-    private fun backupAddedToQueue(context: Context?, targetApp: String) {
-        val mIntent = Intent()
-        mIntent.action = IA_BACKUP_ADDED_TO_QUEUE
-        mIntent.`package` = targetApp
-        context?.sendBroadcast(mIntent)
-    }
+
 
 }
