@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.yogeshpaliyal.comrade.library"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 22

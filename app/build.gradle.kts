@@ -100,6 +100,11 @@ dependencies {
         exclude("org.apache.httpcomponents")
     }
     implementation(libs.androidx.material.icons.extended)
+    // Kotlin + coroutines
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.hilt.work)
+    // When using Kotlin.
+    kapt(libs.androidx.hilt.compiler)
 }
 
 sqldelight {

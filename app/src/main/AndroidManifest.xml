@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:name="com.yogeshpaliyal.MyApplication"
@@ -30,6 +32,13 @@
                 <action android:name="com.yogeshpaliyal.comrade.backup.request"/>
             </intent-filter>
         </receiver>
+        <!-- Add the provider for WorkManager initialization -->
+        <!-- If you want to disable android.startup completely. -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            tools:node="remove">
+        </provider>
     </application>
 
 </manifest>

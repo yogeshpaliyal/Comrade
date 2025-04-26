@@ -24,3 +24,9 @@ UPDATE comradeBackup SET filePath = :filePath WHERE id = :id;
 
 getAllFilesList:
 SELECT * FROM comradeBackup;
+
+getAllFilesByStatus:
+SELECT * FROM comradeBackup WHERE backupStatus = :backupStatus;
+
+getAllPendingFiles:
+SELECT * FROM comradeBackup WHERE backupStatus != 3;

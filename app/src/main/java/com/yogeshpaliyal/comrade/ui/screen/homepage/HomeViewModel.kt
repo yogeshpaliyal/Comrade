@@ -1,7 +1,11 @@
 package com.yogeshpaliyal.comrade.ui.screen.homepage
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -12,17 +16,22 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccoun
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
+import com.yogeshpaliyal.comrade.repository.DriveRepository
 import com.yogeshpaliyal.comrade.utils.DriveServiceHelper
+import com.yogeshpaliyal.comrade.worker.GDriveWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import data.ComradeBackupQueries
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(private val comradeQueries: ComradeBackupQueries) :
-    ViewModel() {
+class HomeViewModel @Inject constructor(
+    private val comradeQueries: ComradeBackupQueries,
+    private val driveRepository: DriveRepository
+) : ViewModel() {
 
     val listOfBackupFiles = comradeQueries.getAllFilesList().asFlow().mapToList(Dispatchers.IO)
 
@@ -70,5 +79,20 @@ class HomeViewModel @Inject constructor(private val comradeQueries: ComradeBacku
         }
         // Optionally, revoke access as well if you want the user to re-authorize next time
         // googleSignInClient.revokeAccess().addOnCompleteListener { ... }
+    }
+
+    fun syncNow(context: Context) {
+        viewModelScope.launch {
+            try {
+                // Option 1: Use repository directly for immediate sync
+                driveRepository.syncNow(context)
+
+                // Option 2: Or use WorkManager for background processing
+                val syncWorkRequest = OneTimeWorkRequestBuilder<GDriveWorker>().build()
+                WorkManager.getInstance(context).enqueue(syncWorkRequest)
+            } catch (e: Exception) {
+                Log.e("HomeViewModel", "Error starting sync", e)
+            }
+        }
     }
 }

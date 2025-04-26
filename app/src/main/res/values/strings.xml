@@ -11,5 +11,7 @@
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
     <string name="theme_system">System Default</string>
+    <string name="sync_now">Sync Now</string>
+    <string name="sync_description">Manually sync backups to Google Drive</string>
     <!-- ... other strings ... -->
 </resources>

@@ -41,6 +41,7 @@ import com.yogeshpaliyal.comrade.ui.dialog.GoogleLoginDialog
 import com.yogeshpaliyal.comrade.ui.screen.homepage.HomeViewModel
 import com.yogeshpaliyal.comrade.ui.theme.ThemeManager
 import com.yogeshpaliyal.comrade.ui.theme.ThemeMode
+import com.yogeshpaliyal.comrade.worker.WorkManagerInitializer
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -89,6 +90,8 @@ fun SettingsPage(viewModel: HomeViewModel = hiltViewModel()) {
                 modifier = Modifier.clickable {
                     if (mGoogleServiceHelper == null) {
                         showLoginDialog = true
+                    } else {
+                        WorkManagerInitializer().syncNow(context)
                     }
                 }
             )

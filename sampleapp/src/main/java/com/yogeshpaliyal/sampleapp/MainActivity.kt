@@ -53,7 +53,7 @@ class MainActivity : ComponentActivity(), ComradeListener {
             Button(onClick = {
 
                 coroutineScope.launch {
-                    val newFile = File(context.externalCacheDir, "file.txt")
+                    val newFile = File(context.externalCacheDir, "file123.txt")
                     if (newFile.exists().not()) {
                         newFile.createNewFile()
                         newFile.writeText("Hello World")
