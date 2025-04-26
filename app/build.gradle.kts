@@ -99,6 +99,7 @@ dependencies {
     implementation("com.google.apis:google-api-services-drive:v3-rev136-1.25.0") {
         exclude("org.apache.httpcomponents")
     }
+    implementation(libs.androidx.material.icons.extended)
 }
 
 sqldelight {

@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.Comrade" parent="Theme.Material3.Light.NoActionBar" />
+    <style name="Theme.Comrade" parent="Theme.Material3.Light.NoActionBar">
+        <!-- Make status bar transparent -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <!-- Make navigation bar transparent (optional) -->
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <!-- Use dark icons on status bar (for light themes) -->
+        <item name="android:windowLightStatusBar">true</item>
+        <!-- Use dark icons on navigation bar (for light themes) (optional) -->
+        <item name="android:windowLightNavigationBar">true</item>
+        <!-- Ensure content draws behind system bars -->
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+    </style>
 </resources>

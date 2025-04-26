@@ -4,8 +4,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import com.yogeshpaliyal.comrade.Database
 import com.yogeshpaliyal.comrade.common.IA_BACKUP_ADDED_TO_QUEUE
 import com.yogeshpaliyal.comrade.common.IA_BACKUP_REQUEST
+import com.yogeshpaliyal.comrade.common.IA_GET_BACKUP_FILE
 import com.yogeshpaliyal.comrade.common.SHARING_CONTENT_URI
 import com.yogeshpaliyal.comrade.types.BackupStatus
 import data.ComradeBackupQueries
@@ -13,12 +15,11 @@ import java.io.File
 import java.io.IOException
 import javax.inject.Inject
 
-class BackupBroadcastHandler @Inject constructor(): IBroadcastReceiverHandler {
-    override val type: String
-        get() = IA_BACKUP_REQUEST
+class BackupBroadcastHandler @Inject constructor(val database: Database): IBroadcastReceiverHandler {
 
-    @Inject
-    lateinit var queries: ComradeBackupQueries
+    companion object {
+        const val ACTION = IA_BACKUP_REQUEST
+    }
 
     override fun handleAction(context: Context, intent: Intent, callingApp: String) {
         val contentUri = intent.getStringExtra(SHARING_CONTENT_URI)
@@ -39,7 +40,7 @@ class BackupBroadcastHandler @Inject constructor(): IBroadcastReceiverHandler {
                         PackageManager.GET_SIGNATURES
                     )?.signatures?.firstOrNull()
 
-                queries.insertFileInfo(
+                database.comradeBackupQueries.insertFileInfo(
                     callingApp,
                     sig?.toCharsString() ?: "",
                     null,
