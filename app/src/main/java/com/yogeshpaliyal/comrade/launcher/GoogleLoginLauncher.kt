@@ -15,9 +15,7 @@ class GoogleLoginLauncher : ActivityResultContract<GoogleSignInClient, GoogleSig
     }
 
     override fun parseResult(resultCode: Int, intent: Intent?): GoogleSignInAccount? {
-
             return GoogleSignIn.getSignedInAccountFromIntent(intent).result
-
     }
 
 }
