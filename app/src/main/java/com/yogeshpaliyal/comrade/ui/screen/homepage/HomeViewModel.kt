@@ -11,12 +11,6 @@ import app.cash.sqldelight.coroutines.mapToList
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.api.client.extensions.android.http.AndroidHttp
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
-import com.google.api.client.json.gson.GsonFactory
-import com.google.api.services.drive.Drive
-import com.google.api.services.drive.DriveScopes
-import com.yogeshpaliyal.comrade.Database
 import com.yogeshpaliyal.comrade.di.DatabaseProvider
 import com.yogeshpaliyal.comrade.repository.DriveRepository
 import com.yogeshpaliyal.comrade.utils.DriveServiceHelper
@@ -24,14 +18,14 @@ import com.yogeshpaliyal.comrade.utils.GoogleSignInManager
 import com.yogeshpaliyal.comrade.worker.GDriveWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import data.ComradeBackup
-import data.ComradeBackupQueries
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.properties.Delegates
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -42,20 +36,32 @@ class HomeViewModel @Inject constructor(
 
     private val database by databaseProvider
 
-    val listOfBackupFiles: MutableStateFlow<List<ComradeBackup>> = MutableStateFlow<List<ComradeBackup>>(listOf())
+    val listOfBackupFiles: MutableStateFlow<List<ComradeBackup>> =
+        MutableStateFlow<List<ComradeBackup>>(listOf())
 
     init {
+        // Setup data collection that recreates when database changes
         viewModelScope.launch {
-            databaseProvider.databaseRefreshFlow.collect {
-                database.comradeBackupQueries.getAllFilesList().asFlow().mapToList(Dispatchers.IO)
-                    .collect {
-                        listOfBackupFiles.value = it
-                    }
-            }
+            // Use flatMapLatest to re-subscribe to the query when database refreshes
+            databaseProvider.databaseRefreshFlow
+                .flatMapLatest {
+                    Log.d("HomeViewModel", "Database refresh triggered, fetching data...")
+                    // This will use the latest database instance
+                    database.comradeBackupQueries.getAllFilesList().asFlow()
+                        .mapToList(Dispatchers.IO)
+                }
+                .catch { e -> // Catch errors during flow collection
+                    Log.e("HomeViewModel", "Error collecting backup files flow", e)
+                    // Optionally update UI state with error
+                }
+                .collectLatest { backups ->
+                    Log.d("HomeViewModel", "Received ${backups.size} backups from database")
+                    listOfBackupFiles.value = backups
+                }
         }
+        // No need for separate loadBackupFiles() call here,
+        // the flow above is triggered immediately by the initial emit from databaseRefreshFlow
     }
-
-
 
     private var mGoogleServiceHelper: MutableStateFlow<DriveServiceHelper?> = MutableStateFlow(null)
 
