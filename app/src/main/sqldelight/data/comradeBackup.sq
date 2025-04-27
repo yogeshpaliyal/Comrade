@@ -4,23 +4,26 @@ CREATE TABLE comradeBackup(
   id INTEGER PRIMARY KEY NOT NULL,
   packageName TEXT NOT NULL,
   packageSignature TEXT NOT NULL,
-  filePath TEXT,
+  fileName TEXT NOT NULL,
+  fileId TEXT,
   localFilePath TEXT NOT NULL,
   dateTime INTEGER NOT NULL,
   backupStatus INTEGER AS BackupStatus
 );
 
 insertFileInfo:
-INSERT INTO comradeBackup (packageName, packageSignature, filePath, localFilePath, dateTime, backupStatus)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT INTO comradeBackup (packageName, packageSignature, fileId, localFilePath, fileName, dateTime, backupStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 
 changeBackupStatus:
 UPDATE comradeBackup SET backupStatus = :backupStatus WHERE id = :id;
 
+setFileId:
+UPDATE comradeBackup SET fileId = :fileId WHERE id = :id;
 
-setFilePath:
-UPDATE comradeBackup SET filePath = :filePath WHERE id = :id;
+backupCompleted:
+UPDATE comradeBackup SET backupStatus = 3 AND fileId = :fileId WHERE id = :id;
 
 getAllFilesList:
 SELECT * FROM comradeBackup;

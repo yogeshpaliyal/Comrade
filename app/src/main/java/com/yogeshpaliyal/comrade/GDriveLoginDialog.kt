@@ -55,9 +55,8 @@ class GDriveLoginDialog: androidx.fragment.app.DialogFragment() {
                 // action that requires Drive access rather than in onCreate.
                 requestSignIn();
             } else {
-                account.account?.let {
+                account?.let {
                     mDriveServiceHelper = getDriveServiceHelper(it)
-                    mListener?.loginCompleted(mDriveServiceHelper)
                 }
             }
         }
@@ -65,23 +64,9 @@ class GDriveLoginDialog: androidx.fragment.app.DialogFragment() {
         return binding.root
     }
 
-    private fun getDriveServiceHelper(account: Account): DriveServiceHelper {
-        val credential =
-            GoogleAccountCredential.usingOAuth2(
-                this.activity, setOf(DriveScopes.DRIVE_FILE)
-            )
-        credential.setSelectedAccount(account)
+    private fun getDriveServiceHelper(account: GoogleSignInAccount): DriveServiceHelper {
 
-        val googleDriveService =
-            Drive.Builder(
-                AndroidHttp.newCompatibleTransport(),
-                GsonFactory(),
-                credential
-            )
-                .setApplicationName("Drive API Migration")
-                .build()
-
-        return DriveServiceHelper(googleDriveService)
+        return DriveServiceHelper(requireContext(), account)
     }
 
 
@@ -126,7 +111,7 @@ class GDriveLoginDialog: androidx.fragment.app.DialogFragment() {
         GoogleSignIn.getSignedInAccountFromIntent(result)
             .addOnSuccessListener { googleAccount: GoogleSignInAccount ->
 
-                googleAccount.account?.let {
+                googleAccount?.let {
                     mDriveServiceHelper = getDriveServiceHelper(it)
                     mListener?.loginCompleted(mDriveServiceHelper)
                 }

@@ -40,23 +40,8 @@ import data.ComradeBackup
 
 private fun initiateGoogleDrive(context: Context): DriveServiceHelper? {
     val googleAccount = GoogleSignIn.getLastSignedInAccount(context)
-    return googleAccount?.account?.let {
-        val credential =
-            GoogleAccountCredential.usingOAuth2(
-                context, setOf(DriveScopes.DRIVE_FILE)
-            )
-        credential.setSelectedAccount(it)
-
-        val googleDriveService =
-            Drive.Builder(
-                AndroidHttp.newCompatibleTransport(),
-                GsonFactory(),
-                credential
-            )
-                .setApplicationName("Drive API Migration")
-                .build()
-
-        DriveServiceHelper(googleDriveService)
+    return googleAccount?.let {
+        DriveServiceHelper(context, it)
     }
 }
 
@@ -118,7 +103,7 @@ fun BackupCard(item: ComradeBackup, modifier: Modifier = Modifier) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    item.packageName,
+                    item.fileName,
                     style = MaterialTheme.typography.titleMedium
                 )
                 Text(
@@ -135,7 +120,7 @@ fun BackupCard(item: ComradeBackup, modifier: Modifier = Modifier) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    item.filePath ?: "No File Path",
+                    item.packageName,
                     modifier = Modifier.weight(1f, fill = false),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -163,8 +148,9 @@ fun PreviewBackupCard() {
             123L,
             "KeyPass",
             "ueiqyriueg",
-            "filePath/backup",
-            "",
+            "abcd",
+            "TestFile.txt",
+            "/backup/TestFile.txt",
             1L,
             BackupStatus.BACKUP_COMPLETED
         )

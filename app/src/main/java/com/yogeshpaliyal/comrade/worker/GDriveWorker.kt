@@ -41,9 +41,15 @@ class GDriveWorker @AssistedInject constructor(
                 Log.d(TAG, "Failed to get Drive service helper. Skipping sync.")
                 return@withContext Result.retry()
             }
+
+            // Sync database file
+            driveRepository.syncDatabaseFile(appContext)
             
-            // Perform sync operation
-            driveRepository.syncAllBackups(appContext)
+            // Perform sync operations
+            driveRepository.syncAllBackups()
+            
+            // Download missing files from Google Drive
+            driveRepository.downloadMissingFiles(appContext)
             
             Log.d(TAG, "GDrive sync completed successfully")
             Result.success()

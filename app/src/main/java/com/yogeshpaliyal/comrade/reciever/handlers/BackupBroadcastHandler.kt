@@ -14,6 +14,7 @@ import data.ComradeBackupQueries
 import java.io.File
 import java.io.IOException
 import javax.inject.Inject
+import androidx.core.net.toUri
 
 class BackupBroadcastHandler @Inject constructor(val database: Database): IBroadcastReceiverHandler {
 
@@ -26,16 +27,17 @@ class BackupBroadcastHandler @Inject constructor(val database: Database): IBroad
 
         if (contentUri != null) {
             // Use the receivedUri to access the file.
-            val newFile = File(context?.cacheDir, "NewFile.txt")
+            val fileName = contentUri.split("/").lastOrNull() ?: ""
+            val newFile = File(context.cacheDir, fileName)
             try {
                 newFile.outputStream().use { output ->
-                    context?.contentResolver?.openInputStream(Uri.parse(contentUri))?.use {
+                    context.contentResolver?.openInputStream(contentUri.toUri())?.use {
                         it.copyTo(output)
                     }
                 }
 
                 val sig =
-                    context?.packageManager?.getPackageInfo(
+                    context.packageManager?.getPackageInfo(
                         callingApp,
                         PackageManager.GET_SIGNATURES
                     )?.signatures?.firstOrNull()
@@ -45,6 +47,7 @@ class BackupBroadcastHandler @Inject constructor(val database: Database): IBroad
                     sig?.toCharsString() ?: "",
                     null,
                     newFile.path,
+                    fileName,
                     System.currentTimeMillis(),
                     BackupStatus.BACKUP_PENDING
                 )

@@ -48,22 +48,8 @@ class HomeViewModel @Inject constructor(
 
     // This function is called by the GoogleLoginDialog upon successful sign-in
     fun setGoogleServiceHelper(account: GoogleSignInAccount, context: Context) {
-        val credential =
-            GoogleAccountCredential.usingOAuth2(
-                context, setOf(DriveScopes.DRIVE_FILE)
-            )
-        credential.selectedAccount = account.account // Use property access
 
-        val googleDriveService =
-            Drive.Builder(
-                AndroidHttp.newCompatibleTransport(),
-                GsonFactory(),
-                credential
-            )
-                .setApplicationName("Comrade App") // Set a more specific app name
-                .build()
-
-        setGoogleServiceHelper(DriveServiceHelper(googleDriveService))
+        setGoogleServiceHelper(DriveServiceHelper(context, account))
     }
 
     // Function to handle logout
