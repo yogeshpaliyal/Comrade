@@ -8,6 +8,7 @@ import androidx.work.WorkerParameters
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.yogeshpaliyal.comrade.repository.DriveRepository
 import com.yogeshpaliyal.comrade.utils.DriveServiceHelper
+import com.yogeshpaliyal.comrade.utils.GdriveSyncManager
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +18,7 @@ import kotlinx.coroutines.withContext
 class GDriveWorker @AssistedInject constructor(
     @Assisted val appContext: Context,
     @Assisted workerParams: WorkerParameters,
-    private val driveRepository: DriveRepository
+    val gdriveSyncManager: GdriveSyncManager
 ) : CoroutineWorker(appContext, workerParams) {
 
     companion object {
@@ -25,44 +26,6 @@ class GDriveWorker @AssistedInject constructor(
     }
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
-        try {
-            Log.d(TAG, "Starting GDrive sync")
-            
-            // Check if user is signed in to Google
-            val account = GoogleSignIn.getLastSignedInAccount(applicationContext)
-            if (account == null) {
-                Log.d(TAG, "No Google account found. Skipping sync.")
-                return@withContext Result.failure()
-            }
-            
-            // Get DriveServiceHelper instance using the repository
-            val driveServiceHelper = driveRepository.getDriveServiceHelper()
-            if (driveServiceHelper == null) {
-                Log.d(TAG, "Failed to get Drive service helper. Skipping sync.")
-                return@withContext Result.retry()
-            }
-
-            // First check if database exists on drive and download it if newer
-            val dbDownloaded = driveRepository.searchAndDownloadDatabaseOnLogin()
-            
-            // Only do the regular sync if we didn't just download a new database
-            // (which would have updated database references already)
-            if (!dbDownloaded) {
-                // Sync database file
-                driveRepository.syncDatabaseFile(appContext)
-                
-                // Perform sync operations
-                driveRepository.syncAllBackups()
-                
-                // Download missing files from Google Drive
-                driveRepository.downloadMissingFiles(appContext)
-            }
-            
-            Log.d(TAG, "GDrive sync completed successfully")
-            Result.success()
-        } catch (e: Exception) {
-            Log.e(TAG, "Error during GDrive sync", e)
-            Result.failure()
-        }
+       gdriveSyncManager.sync()
     }
 }

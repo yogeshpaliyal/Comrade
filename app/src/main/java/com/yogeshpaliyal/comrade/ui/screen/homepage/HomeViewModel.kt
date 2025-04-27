@@ -4,18 +4,13 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
-import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.yogeshpaliyal.comrade.di.DatabaseProvider
-import com.yogeshpaliyal.comrade.repository.DriveRepository
 import com.yogeshpaliyal.comrade.utils.DriveServiceHelper
+import com.yogeshpaliyal.comrade.utils.GdriveSyncManager
 import com.yogeshpaliyal.comrade.utils.GoogleSignInManager
-import com.yogeshpaliyal.comrade.worker.GDriveWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import data.ComradeBackup
 import kotlinx.coroutines.Dispatchers
@@ -30,8 +25,8 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val databaseProvider: DatabaseProvider,
-    private val driveRepository: DriveRepository,
-    private val googleSignInManager: GoogleSignInManager
+    private val googleSignInManager: GoogleSignInManager,
+    private val gdriveSyncManager: GdriveSyncManager
 ) : ViewModel() {
 
     private val database by databaseProvider
@@ -59,8 +54,6 @@ class HomeViewModel @Inject constructor(
                     listOfBackupFiles.value = backups
                 }
         }
-        // No need for separate loadBackupFiles() call here,
-        // the flow above is triggered immediately by the initial emit from databaseRefreshFlow
     }
 
     private var mGoogleServiceHelper: MutableStateFlow<DriveServiceHelper?> = MutableStateFlow(null)
@@ -82,31 +75,16 @@ class HomeViewModel @Inject constructor(
 
     // Function to handle logout
     fun logoutFromGoogleDrive(context: Context) {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestEmail() // Ensure you request scopes needed for sign-in options
-            // Add other scopes if needed, like .requestScopes(Scope(DriveScopes.DRIVE_FILE))
-            .build()
-        val googleSignInClient = GoogleSignIn.getClient(context, gso)
-        googleSignInClient.signOut().addOnCompleteListener {
-            // Clear the DriveServiceHelper upon successful sign out
+        googleSignInManager.logout {
             setGoogleServiceHelper(null)
         }
         // Optionally, revoke access as well if you want the user to re-authorize next time
         // googleSignInClient.revokeAccess().addOnCompleteListener { ... }
     }
 
-    fun syncNow(context: Context) {
+    fun syncNow() {
         viewModelScope.launch {
-            try {
-                // Option 1: Use repository directly for immediate sync
-                driveRepository.syncNow(context)
-
-                // Option 2: Or use WorkManager for background processing
-                val syncWorkRequest = OneTimeWorkRequestBuilder<GDriveWorker>().build()
-                WorkManager.getInstance(context).enqueue(syncWorkRequest)
-            } catch (e: Exception) {
-                Log.e("HomeViewModel", "Error starting sync", e)
-            }
+            gdriveSyncManager.sync()
         }
     }
 }

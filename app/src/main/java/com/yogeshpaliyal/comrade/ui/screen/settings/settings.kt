@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Login
 import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -90,27 +91,11 @@ fun SettingsPage(viewModel: HomeViewModel = hiltViewModel()) {
                 modifier = Modifier.clickable {
                     if (mGoogleServiceHelper == null) {
                         showLoginDialog = true
-                    } else {
-                        WorkManagerInitializer().syncNow(context)
                     }
                 }
             )
 
-            if (mGoogleServiceHelper != null) {
-                HorizontalDivider()
-                ListItem(
-                    headlineContent = { Text(stringResource(id = R.string.logout)) },
-                    leadingContent = {
-                        Icon(
-                            Icons.Filled.Logout,
-                            contentDescription = stringResource(id = R.string.logout)
-                        )
-                    },
-                    modifier = Modifier.clickable {
-                        viewModel.logoutFromGoogleDrive(context)
-                    }
-                )
-            }
+
             
             HorizontalDivider()
             
@@ -136,6 +121,40 @@ fun SettingsPage(viewModel: HomeViewModel = hiltViewModel()) {
                     showThemeDialog = true
                 }
             )
+
+            if (mGoogleServiceHelper != null) {
+                HorizontalDivider()
+                ListItem(
+                    headlineContent = { Text(stringResource(id = R.string.sync_now)) },
+                    leadingContent = {
+                        Icon(
+                            Icons.Filled.Sync,
+                            contentDescription = stringResource(id = R.string.sync_now)
+                        )
+                    },
+                    modifier = Modifier.clickable {
+                        viewModel.syncNow()
+                    }
+                )
+
+                HorizontalDivider()
+                ListItem(
+                    headlineContent = { Text(stringResource(id = R.string.logout)) },
+                    leadingContent = {
+                        Icon(
+                            Icons.Filled.Logout,
+                            contentDescription = stringResource(id = R.string.logout)
+                        )
+                    },
+                    modifier = Modifier.clickable {
+                        viewModel.logoutFromGoogleDrive(context)
+                    }
+                )
+
+                HorizontalDivider()
+
+
+            }
         }
     }
 

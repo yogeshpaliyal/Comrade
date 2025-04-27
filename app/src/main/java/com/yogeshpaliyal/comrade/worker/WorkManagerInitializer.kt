@@ -12,22 +12,6 @@ import java.util.concurrent.TimeUnit
 
 class WorkManagerInitializer {
 
-    fun syncNow(context: Context) {
-        val constraints = Constraints.Builder()
-            //.setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
-
-        val dailySyncRequest = OneTimeWorkRequestBuilder<GDriveWorker>()
-            .setConstraints(constraints)
-            .build()
-
-        WorkManager.getInstance(context).enqueueUniqueWork(
-            "gdrive_sync",
-            existingWorkPolicy = ExistingWorkPolicy.REPLACE,
-            dailySyncRequest
-        )
-    }
-
     private fun schedulePeriodicSync(context: Context) {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
