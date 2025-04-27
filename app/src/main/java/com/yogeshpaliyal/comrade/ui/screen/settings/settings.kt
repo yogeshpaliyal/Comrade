@@ -49,6 +49,7 @@ import com.yogeshpaliyal.comrade.worker.WorkManagerInitializer
 @Composable
 fun SettingsPage(viewModel: HomeViewModel = hiltViewModel()) {
     val mGoogleServiceHelper by viewModel.getGoogleServiceHelper().collectAsState()
+    val lastSyncTime by viewModel.lastSyncTime.collectAsState()
     var showLoginDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -131,6 +132,9 @@ fun SettingsPage(viewModel: HomeViewModel = hiltViewModel()) {
                             Icons.Filled.Sync,
                             contentDescription = stringResource(id = R.string.sync_now)
                         )
+                    },
+                    supportingContent = {
+                        Text(if(lastSyncTime == "") "Not yet synced, click to sync" else "Last synced at : $lastSyncTime")
                     },
                     modifier = Modifier.clickable {
                         viewModel.syncNow()

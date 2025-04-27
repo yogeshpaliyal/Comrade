@@ -8,6 +8,7 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.yogeshpaliyal.comrade.di.DatabaseProvider
+import com.yogeshpaliyal.comrade.utils.DateTimeUtils
 import com.yogeshpaliyal.comrade.utils.DriveServiceHelper
 import com.yogeshpaliyal.comrade.utils.GdriveSyncManager
 import com.yogeshpaliyal.comrade.utils.GoogleSignInManager
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -31,8 +33,11 @@ class HomeViewModel @Inject constructor(
 
     private val database by databaseProvider
 
+    val lastSyncTime: MutableStateFlow<String> = MutableStateFlow("")
+
     val listOfBackupFiles: MutableStateFlow<List<ComradeBackup>> =
         MutableStateFlow<List<ComradeBackup>>(listOf())
+
 
     init {
         // Setup data collection that recreates when database changes
@@ -53,6 +58,14 @@ class HomeViewModel @Inject constructor(
                     Log.d("HomeViewModel", "Received ${backups.size} backups from database")
                     listOfBackupFiles.value = backups
                 }
+        }
+
+        updateTime()
+    }
+
+    fun updateTime() {
+        viewModelScope.launch(Dispatchers.IO) {
+            lastSyncTime.value = DateTimeUtils.formatDateTime(gdriveSyncManager.getSyncTime())
         }
     }
 
@@ -85,6 +98,7 @@ class HomeViewModel @Inject constructor(
     fun syncNow() {
         viewModelScope.launch {
             gdriveSyncManager.sync()
+            updateTime()
         }
     }
 }

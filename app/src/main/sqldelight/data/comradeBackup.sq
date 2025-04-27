@@ -23,7 +23,7 @@ setFileId:
 UPDATE comradeBackup SET fileId = :fileId WHERE id = :id;
 
 backupCompleted:
-UPDATE comradeBackup SET backupStatus = 3 AND fileId = :fileId WHERE id = :id;
+UPDATE comradeBackup SET backupStatus = 3 WHERE id = :id;
 
 getAllFilesList:
 SELECT * FROM comradeBackup;
@@ -32,4 +32,4 @@ getAllFilesByStatus:
 SELECT * FROM comradeBackup WHERE backupStatus = :backupStatus;
 
 getAllPendingFiles:
-SELECT * FROM comradeBackup WHERE backupStatus != 3;
+SELECT * FROM comradeBackup WHERE backupStatus IS NULL OR backupStatus != 3;

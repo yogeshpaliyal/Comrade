@@ -31,7 +31,11 @@ class BackupBroadcastHandler @Inject constructor(val databaseProvider: DatabaseP
         if (contentUri != null) {
             // Use the receivedUri to access the file.
             val fileName = contentUri.split("/").lastOrNull() ?: ""
-            val newFile = File(context.cacheDir, fileName)
+            val directory = File(context.cacheDir, callingApp)
+            if (!directory.exists()) {
+                directory.mkdirs()
+            }
+            val newFile = File(directory, fileName)
             try {
                 newFile.outputStream().use { output ->
                     context.contentResolver?.openInputStream(contentUri.toUri())?.use {

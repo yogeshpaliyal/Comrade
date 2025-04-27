@@ -5,6 +5,7 @@ import android.util.Log
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.yogeshpaliyal.comrade.Database
 import com.yogeshpaliyal.comrade.di.DatabaseProvider
+import com.yogeshpaliyal.comrade.types.BackupStatus
 import com.yogeshpaliyal.comrade.utils.DriveServiceHelper
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -116,8 +117,9 @@ class DriveRepository @Inject constructor(
                 val file = File(backup.localFilePath)
                 if (file.exists()) {
                     // If the file exists locally, upload it to Drive
-                    driveServiceHelper.uploadFile(file, folderId, backup.fileName, null)?.let {
-                        database.comradeBackupQueries.backupCompleted(it, backup.id)
+                    driveServiceHelper.uploadFile(file, folderId, "${backup.id}-${backup.fileName}", null)?.let {
+                        database.comradeBackupQueries.changeBackupStatus(BackupStatus.BACKUP_COMPLETED, backup.id)
+                        database.comradeBackupQueries.setFileId(it, backup.id)
                     }
                 }
             }
@@ -148,16 +150,6 @@ class DriveRepository @Inject constructor(
     suspend fun downloadMissingFiles(context: Context) = withContext(Dispatchers.IO) {
         try {
             val driveServiceHelper = getDriveServiceHelper() ?: return@withContext
-
-            // Check if database file needs to be restored
-            val dbFile = context.getDatabasePath(DB_NAME)
-            if (!dbFile.exists()) {
-                val dbDownloaded = restoreDatabaseFromDrive(driveServiceHelper, dbFile)
-                if (dbDownloaded) {
-                    // Notify that database has been restored
-                    databaseRestartListener?.onDatabaseRestarted()
-                }
-            }
 
             // Download missing backup files
             downloadMissingBackups(driveServiceHelper)

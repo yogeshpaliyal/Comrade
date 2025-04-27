@@ -34,6 +34,12 @@ import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import com.yogeshpaliyal.comrade.types.BackupStatus
+import com.yogeshpaliyal.comrade.ui.theme.DarkGreen
+import com.yogeshpaliyal.comrade.ui.theme.LightGreen
+import com.yogeshpaliyal.comrade.ui.theme.Orange100
+import com.yogeshpaliyal.comrade.ui.theme.Orange300
+import com.yogeshpaliyal.comrade.ui.theme.Orange800
+import com.yogeshpaliyal.comrade.ui.theme.VeryLightGreen
 import com.yogeshpaliyal.comrade.utils.DriveServiceHelper
 import data.ComradeBackup
 
@@ -79,18 +85,18 @@ fun Homepage(viewModel: HomeViewModel = hiltViewModel()) {
 @Composable
 fun BackupCard(item: ComradeBackup, modifier: Modifier = Modifier) {
     val (statusText, statusColor) = when (item.backupStatus) {
-        BackupStatus.BACKUP_PENDING -> "Pending" to MaterialTheme.colorScheme.secondaryContainer
+        BackupStatus.BACKUP_PENDING -> "Pending" to Orange100
         BackupStatus.BACKUP_IN_PROGRESS -> "In Progress" to MaterialTheme.colorScheme.tertiaryContainer
-        BackupStatus.BACKUP_COMPLETED -> "Completed" to MaterialTheme.colorScheme.primaryContainer
+        BackupStatus.BACKUP_COMPLETED -> "Completed" to VeryLightGreen
         BackupStatus.BACKUP_FAILED -> "Failed" to MaterialTheme.colorScheme.errorContainer
         BackupStatus.UNKNOWN -> "Unknown" to MaterialTheme.colorScheme.surfaceVariant
         null -> "Error" to MaterialTheme.colorScheme.errorContainer
     }
 
     val statusTextColor = when (item.backupStatus) {
-        BackupStatus.BACKUP_PENDING -> MaterialTheme.colorScheme.onSecondaryContainer
+        BackupStatus.BACKUP_PENDING -> Orange800
         BackupStatus.BACKUP_IN_PROGRESS -> MaterialTheme.colorScheme.onTertiaryContainer
-        BackupStatus.BACKUP_COMPLETED -> MaterialTheme.colorScheme.onPrimaryContainer
+        BackupStatus.BACKUP_COMPLETED -> DarkGreen
         BackupStatus.BACKUP_FAILED -> MaterialTheme.colorScheme.onErrorContainer
         BackupStatus.UNKNOWN -> MaterialTheme.colorScheme.onSurfaceVariant
         null -> MaterialTheme.colorScheme.onErrorContainer

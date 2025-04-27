@@ -16,7 +16,7 @@ import javax.inject.Singleton
 @Singleton
 class GoogleSignInManager @Inject constructor(
     @ApplicationContext val context: Context,
-    private val driveRepository: DriveRepository
+    private val driveRepository: DriveRepository,
 ) {
     companion object {
         private const val TAG = "GoogleSignInManager"
@@ -44,6 +44,7 @@ class GoogleSignInManager @Inject constructor(
                 try {
                     val downloaded = driveRepository.searchAndDownloadDatabaseOnLogin()
                     if (downloaded) {
+                        driveRepository.downloadMissingFiles(context)
                         Log.d(TAG, "Downloaded and restored database from Google Drive")
                     } else {
                         Log.d(TAG, "No database found on Google Drive or local database is up to date")
