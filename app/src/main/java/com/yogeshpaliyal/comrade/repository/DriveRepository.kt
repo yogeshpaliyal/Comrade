@@ -6,7 +6,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.yogeshpaliyal.comrade.Database
 import com.yogeshpaliyal.comrade.utils.DriveServiceHelper
 import dagger.hilt.android.qualifiers.ApplicationContext
-import data.ComradeBackup
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -26,22 +25,95 @@ class DriveRepository @Inject constructor(
         private const val BACKUP_FOLDER_NAME = "comrade_backups"
         private const val DB_FILE_NAME = "comrade_db.sqlite"
     }
-    
+
+    // Interface to notify database connection restart
+    interface DatabaseRestartListener {
+        fun onDatabaseRestarted()
+    }
+
+    private var databaseRestartListener: DatabaseRestartListener? = null
+
+    fun setDatabaseRestartListener(listener: DatabaseRestartListener) {
+        databaseRestartListener = listener
+    }
+
     fun getDriveServiceHelper(): DriveServiceHelper? {
         val account = GoogleSignIn.getLastSignedInAccount(context) ?: return null
         return DriveServiceHelper(context, account)
     }
-    
+
+    // New function to search and download database when user logs in
+    suspend fun searchAndDownloadDatabaseOnLogin(): Boolean = withContext(Dispatchers.IO) {
+        try {
+            val driveServiceHelper = getDriveServiceHelper() ?: return@withContext false
+
+            // Get the database folder on Drive
+            val dbFolderId = driveServiceHelper.createFolderIfNotExists(DB_FOLDER_NAME)
+
+            // Look for the database file
+            val driveFiles = driveServiceHelper.listFilesInFolder(dbFolderId)
+            val dbDriveFile = driveFiles.find { it.name == DB_FILE_NAME }
+
+            if (dbDriveFile != null) {
+                Log.d(TAG, "Found database file on Drive: ${dbDriveFile.name}")
+
+                // Get the current database file
+                val currentDbFile = context.getDatabasePath(DB_NAME)
+
+                // Check if local file exists
+                val localExists = currentDbFile.exists()
+
+                // If local doesn't exist or we want to always get the latest (could add timestamp check here)
+//                if (!localExists) {
+                    // Make sure the parent directory exists
+//                    currentDbFile.parentFile?.mkdirs()
+
+                    // Temporary file to download to
+                    val tempDbFile = File(currentDbFile.parentFile, "temp_${DB_NAME}")
+
+                    // Download the database file
+                    val success = driveServiceHelper.downloadFile(dbDriveFile.id, tempDbFile)
+
+                    if (success) {
+                        // Close current database connection if exists
+                        if (localExists) {
+                            // Need to close database connections before replacing the file
+                            // This would happen in the DatabaseProvider
+                        }
+
+                        // Replace the current database with the downloaded one
+                        if (tempDbFile.exists()) {
+                            if (localExists) {
+                                currentDbFile.delete()
+                            }
+                            tempDbFile.renameTo(currentDbFile)
+
+                            // Notify that database has been replaced
+                            databaseRestartListener?.onDatabaseRestarted()
+
+                            Log.d(TAG, "Database file downloaded and replaced from Drive")
+                            return@withContext true
+                        }
+//                    }
+                }
+            }
+            return@withContext false
+        } catch (e: Exception) {
+            Log.e(TAG, "Error searching and downloading database", e)
+            return@withContext false
+        }
+    }
+
     suspend fun syncAllBackups() {
         try {
             val driveServiceHelper = getDriveServiceHelper() ?: return
-            
+
             // Create or get the backups folder on Google Drive
             val folderId = driveServiceHelper.createFolderIfNotExists(BACKUP_FOLDER_NAME)
-            
+
             // Get all backup details from local database
             val backups = database.comradeBackupQueries.getAllPendingFiles().executeAsList()
-            
+
             // Sync each backup file to Google Drive
             backups.forEach { backup ->
                 val file = File(backup.localFilePath)
@@ -56,14 +128,14 @@ class DriveRepository @Inject constructor(
             Log.e(TAG, "Error syncing backups", e)
         }
     }
-    
+
     suspend fun syncDatabaseFile(context: Context) = withContext(Dispatchers.IO) {
         try {
             val driveServiceHelper = getDriveServiceHelper() ?: return@withContext
-            
+
             // Create or get the database folder on Google Drive
             val dbFolderId = driveServiceHelper.createFolderIfNotExists(DB_FOLDER_NAME)
-            
+
             // Get the database file path
             val dbFile = context.getDatabasePath(DB_NAME)
             if (dbFile.exists()) {
@@ -75,7 +147,7 @@ class DriveRepository @Inject constructor(
             Log.e(TAG, "Error syncing database file", e)
         }
     }
-    
+
     suspend fun downloadMissingFiles(context: Context) = withContext(Dispatchers.IO) {
         try {
             val driveServiceHelper = getDriveServiceHelper() ?: return@withContext
@@ -83,45 +155,47 @@ class DriveRepository @Inject constructor(
             // Check if database file needs to be restored
             val dbFile = context.getDatabasePath(DB_NAME)
             if (!dbFile.exists()) {
-                restoreDatabaseFromDrive(driveServiceHelper, dbFile)
+                val dbDownloaded = restoreDatabaseFromDrive(driveServiceHelper, dbFile)
+                if (dbDownloaded) {
+                    // Notify that database has been restored
+                    databaseRestartListener?.onDatabaseRestarted()
+                }
             }
 
             // Download missing backup files
             downloadMissingBackups(driveServiceHelper)
-            
-
         } catch (e: Exception) {
             Log.e(TAG, "Error downloading missing files", e)
         }
     }
-    
+
     private suspend fun downloadMissingBackups(driveServiceHelper: DriveServiceHelper) {
         try {
             // Get backup folder
             val folderId = driveServiceHelper.createFolderIfNotExists(BACKUP_FOLDER_NAME)
-            
+
             // Get all files from the Drive folder
             val driveFiles = driveServiceHelper.listFilesInFolder(folderId)
-            
+
             // Get all backup details from local database
             val localBackups = database.comradeBackupQueries.getAllFilesList().executeAsList()
             val localFileNames = localBackups.map { it.fileName }
-            
+
             // Download files that exist on Drive but not locally
             for (driveFile in driveFiles) {
                 if (!localFileNames.contains(driveFile.name)) {
                     Log.d(TAG, "Found missing file on Drive: ${driveFile.name}")
-                    
+
                     // Create local backup directory if it doesn't exist
                     val backupDir = File(context.filesDir, "backups")
                     if (!backupDir.exists()) {
                         backupDir.mkdirs()
                     }
-                    
+
                     // Download the file
                     val downloadedFile = File(backupDir, driveFile.name)
                     driveServiceHelper.downloadFile(driveFile.id, downloadedFile)
-                    
+
                     Log.d(TAG, "Downloaded missing file: ${driveFile.name}")
                 }
             }
@@ -129,29 +203,34 @@ class DriveRepository @Inject constructor(
             Log.e(TAG, "Error downloading missing backups", e)
         }
     }
-    
-    private suspend fun restoreDatabaseFromDrive(driveServiceHelper: DriveServiceHelper, dbFile: File) {
+
+    private suspend fun restoreDatabaseFromDrive(driveServiceHelper: DriveServiceHelper, dbFile: File): Boolean {
         try {
             // Get the database folder on Drive
             val dbFolderId = driveServiceHelper.createFolderIfNotExists(DB_FOLDER_NAME)
-            
+
             // Look for the database file
             val driveFiles = driveServiceHelper.listFilesInFolder(dbFolderId)
             val dbDriveFile = driveFiles.find { it.name == DB_FILE_NAME }
-            
+
             if (dbDriveFile != null) {
                 // Make sure the parent directory exists
                 dbFile.parentFile?.mkdirs()
-                
+
                 // Download the database file
-                driveServiceHelper.downloadFile(dbDriveFile.id, dbFile)
-                Log.d(TAG, "Database file restored from Drive")
+                val success = driveServiceHelper.downloadFile(dbDriveFile.id, dbFile)
+                if (success) {
+                    Log.d(TAG, "Database file restored from Drive")
+                    return true
+                }
             }
+            return false
         } catch (e: Exception) {
             Log.e(TAG, "Error restoring database from Drive", e)
+            return false
         }
     }
-    
+
     // Manually trigger a sync now
     suspend fun syncNow(context: Context) {
         syncAllBackups()

@@ -16,8 +16,10 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccoun
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
+import com.yogeshpaliyal.comrade.Database
 import com.yogeshpaliyal.comrade.repository.DriveRepository
 import com.yogeshpaliyal.comrade.utils.DriveServiceHelper
+import com.yogeshpaliyal.comrade.utils.GoogleSignInManager
 import com.yogeshpaliyal.comrade.worker.GDriveWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import data.ComradeBackupQueries
@@ -29,11 +31,12 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val comradeQueries: ComradeBackupQueries,
-    private val driveRepository: DriveRepository
+    private val database: Database,
+    private val driveRepository: DriveRepository,
+    private val googleSignInManager: GoogleSignInManager
 ) : ViewModel() {
 
-    val listOfBackupFiles = comradeQueries.getAllFilesList().asFlow().mapToList(Dispatchers.IO)
+    val listOfBackupFiles = database.comradeBackupQueries.getAllFilesList().asFlow().mapToList(Dispatchers.IO)
 
     private var mGoogleServiceHelper: MutableStateFlow<DriveServiceHelper?> = MutableStateFlow(null)
 
@@ -48,7 +51,7 @@ class HomeViewModel @Inject constructor(
 
     // This function is called by the GoogleLoginDialog upon successful sign-in
     fun setGoogleServiceHelper(account: GoogleSignInAccount, context: Context) {
-
+        googleSignInManager.onUserSignedIn(account)
         setGoogleServiceHelper(DriveServiceHelper(context, account))
     }
 
