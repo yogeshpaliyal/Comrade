@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.yogeshpaliyal.comrade.Database
+import com.yogeshpaliyal.comrade.di.DatabaseProvider
 import com.yogeshpaliyal.comrade.utils.DriveServiceHelper
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -16,8 +17,8 @@ private const val DB_NAME = "comrade.db"
 
 @Singleton
 class DriveRepository @Inject constructor(
-    private val database: Database,
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val databaseProvider: DatabaseProvider
 ) {
     companion object {
         private const val TAG = "DriveRepository"
@@ -26,6 +27,9 @@ class DriveRepository @Inject constructor(
         private const val DB_FILE_NAME = "comrade_db.sqlite"
     }
 
+    // Use lateinit to allow this to be set in a non-constructor way
+    private val database: Database by databaseProvider
+    
     // Interface to notify database connection restart
     interface DatabaseRestartListener {
         fun onDatabaseRestarted()
@@ -42,7 +46,7 @@ class DriveRepository @Inject constructor(
         return DriveServiceHelper(context, account)
     }
 
-    // New function to search and download database when user logs in
+    // Function to search and download database when user logs in
     suspend fun searchAndDownloadDatabaseOnLogin(): Boolean = withContext(Dispatchers.IO) {
         try {
             val driveServiceHelper = getDriveServiceHelper() ?: return@withContext false
@@ -63,38 +67,31 @@ class DriveRepository @Inject constructor(
                 // Check if local file exists
                 val localExists = currentDbFile.exists()
 
-                // If local doesn't exist or we want to always get the latest (could add timestamp check here)
-//                if (!localExists) {
-                    // Make sure the parent directory exists
-//                    currentDbFile.parentFile?.mkdirs()
+                // Make sure the parent directory exists
+                currentDbFile.parentFile?.mkdirs()
 
-                    // Temporary file to download to
-                    val tempDbFile = File(currentDbFile.parentFile, "temp_${DB_NAME}")
+                // Temporary file to download to
+                val tempDbFile = File(currentDbFile.parentFile, "temp_${DB_NAME}")
 
-                    // Download the database file
-                    val success = driveServiceHelper.downloadFile(dbDriveFile.id, tempDbFile)
+                // Download the database file
+                val success = driveServiceHelper.downloadFile(dbDriveFile.id, tempDbFile)
 
-                    if (success) {
-                        // Close current database connection if exists
+                if (success) {
+                    // Replace the current database with the downloaded one
+                    if (tempDbFile.exists()) {
+                        // First close database connections
                         if (localExists) {
-                            // Need to close database connections before replacing the file
-                            // This would happen in the DatabaseProvider
+                            currentDbFile.delete()
                         }
-
-                        // Replace the current database with the downloaded one
-                        if (tempDbFile.exists()) {
-                            if (localExists) {
-                                currentDbFile.delete()
-                            }
-                            tempDbFile.renameTo(currentDbFile)
-
-                            // Notify that database has been replaced
-                            databaseRestartListener?.onDatabaseRestarted()
-
+                        
+                        if (tempDbFile.renameTo(currentDbFile)) {
+                            // Notify that database has been replaced - this will recreate the DB
+                            databaseProvider.resetDatabase()
+                            
                             Log.d(TAG, "Database file downloaded and replaced from Drive")
                             return@withContext true
                         }
-//                    }
+                    }
                 }
             }
             return@withContext false

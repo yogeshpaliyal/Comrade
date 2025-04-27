@@ -42,14 +42,21 @@ class GDriveWorker @AssistedInject constructor(
                 return@withContext Result.retry()
             }
 
-            // Sync database file
-            driveRepository.syncDatabaseFile(appContext)
+            // First check if database exists on drive and download it if newer
+            val dbDownloaded = driveRepository.searchAndDownloadDatabaseOnLogin()
             
-            // Perform sync operations
-            driveRepository.syncAllBackups()
-            
-            // Download missing files from Google Drive
-            driveRepository.downloadMissingFiles(appContext)
+            // Only do the regular sync if we didn't just download a new database
+            // (which would have updated database references already)
+            if (!dbDownloaded) {
+                // Sync database file
+                driveRepository.syncDatabaseFile(appContext)
+                
+                // Perform sync operations
+                driveRepository.syncAllBackups()
+                
+                // Download missing files from Google Drive
+                driveRepository.downloadMissingFiles(appContext)
+            }
             
             Log.d(TAG, "GDrive sync completed successfully")
             Result.success()

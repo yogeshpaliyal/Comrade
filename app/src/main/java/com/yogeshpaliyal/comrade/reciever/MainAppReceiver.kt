@@ -6,6 +6,7 @@ import android.content.Intent
 import com.yogeshpaliyal.comrade.Database
 import com.yogeshpaliyal.comrade.common.CLIENT_APP_PACKAGE_NAME
 import com.yogeshpaliyal.comrade.common.IA_COMPANION_SETUP_COMPLETED
+import com.yogeshpaliyal.comrade.di.DatabaseProvider
 import com.yogeshpaliyal.comrade.reciever.handlers.BackupBroadcastHandler
 import com.yogeshpaliyal.comrade.reciever.handlers.GetBackupFileHandler
 import com.yogeshpaliyal.comrade.reciever.handlers.GetBackupFileStatusHandler
@@ -20,9 +21,7 @@ import javax.inject.Inject
 class MainAppReceiver : BroadcastReceiver() {
 
     @Inject
-    lateinit var database: Database
-
-
+    lateinit var databaseDelegate: DatabaseProvider
 
     override fun onReceive(context: Context?, intent: Intent?) {
         context ?: return
@@ -39,7 +38,7 @@ class MainAppReceiver : BroadcastReceiver() {
         }
 
         val request = when(intent.action) {
-            BackupBroadcastHandler.ACTION -> BackupBroadcastHandler(database)
+            BackupBroadcastHandler.ACTION -> BackupBroadcastHandler(databaseDelegate)
             GetBackupFileHandler.ACTION -> GetBackupFileHandler()
             GetBackupFilesListHandler.ACTION -> GetBackupFilesListHandler()
             GetBackupFileStatusHandler.ACTION -> GetBackupFileStatusHandler()

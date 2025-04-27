@@ -15,8 +15,11 @@ import java.io.File
 import java.io.IOException
 import javax.inject.Inject
 import androidx.core.net.toUri
+import com.yogeshpaliyal.comrade.di.DatabaseProvider
 
-class BackupBroadcastHandler @Inject constructor(val database: Database): IBroadcastReceiverHandler {
+class BackupBroadcastHandler @Inject constructor(val databaseProvider: DatabaseProvider): IBroadcastReceiverHandler {
+
+    private val database by databaseProvider
 
     companion object {
         const val ACTION = IA_BACKUP_REQUEST

@@ -14,7 +14,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import data.ComradeBackup
 import data.ComradeBackupQueries
-import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Singleton
 
 private const val DB_NAME = "comrade.db"
@@ -23,81 +22,16 @@ private const val DB_NAME = "comrade.db"
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
 
-    private val databaseReference = AtomicReference<Database>()
-    private val databaseDriver = AtomicReference<SqlDriver>()
-
     @Provides
     @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): Database {
-        return createDatabase(context).also {
-            databaseReference.set(it)
-        }
-    }
-
-    @Provides
-    @Singleton
-    fun provideComradeQueries(@ApplicationContext database: Database): ComradeBackupQueries {
+    fun provideComradeQueries(database: Database): ComradeBackupQueries {
         return database.comradeBackupQueries
     }
 
-    // Create a new database instance
-    private fun createDatabase(context: Context): Database {
-        val driver: SqlDriver = AndroidSqliteDriver(Database.Schema, context, DB_NAME)
-
-        val backupStatusAdapter = object : ColumnAdapter<BackupStatus, Long> {
-            override fun decode(databaseValue: Long): BackupStatus {
-                return BackupStatus.valueOf(databaseValue)
-            }
-
-            override fun encode(value: BackupStatus): Long {
-                return value.status
-            }
-        }
-        databaseDriver.set(driver)
-        return Database(
-            driver,
-            comradeBackupAdapter = ComradeBackup.Adapter(
-                backupStatusAdapter = backupStatusAdapter
-            )
-        )
-    }
-
     @Provides
     @Singleton
-    fun provideDatabaseRestartManager(
-        @ApplicationContext context: Context,
-        driveRepository: DriveRepository
-    ): DatabaseRestartManager {
-        return DatabaseRestartManager(context, driveRepository)
-    }
-
-    class DatabaseRestartManager(
-        private val context: Context,
-        driveRepository: DriveRepository
-    ) : DriveRepository.DatabaseRestartListener {
-
-        init {
-            driveRepository.setDatabaseRestartListener(this)
-        }
-
-        override fun onDatabaseRestarted() {
-            // Close existing database connection
-            val oldDatabase = databaseReference.get()
-            oldDatabase?.let {
-                try {
-                    // Close connections
-                    databaseDriver.get().close()
-//                    (it.comradeBackupQueries.database.driver as? AndroidSqliteDriver)?.close()
-                } catch (e: Exception) {
-                    // Handle any exceptions when closing the database
-                }
-            }
-
-            // Create a new database instance
-            val newDatabase = createDatabase(context)
-            
-            // Update the reference
-            databaseReference.set(newDatabase)
-        }
+    fun provideDatabase(databaseProvider: DatabaseProvider): Database {
+        val db by databaseProvider
+        return db
     }
 }

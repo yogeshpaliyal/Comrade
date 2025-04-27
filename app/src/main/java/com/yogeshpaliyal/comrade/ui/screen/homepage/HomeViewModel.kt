@@ -17,26 +17,45 @@ import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import com.yogeshpaliyal.comrade.Database
+import com.yogeshpaliyal.comrade.di.DatabaseProvider
 import com.yogeshpaliyal.comrade.repository.DriveRepository
 import com.yogeshpaliyal.comrade.utils.DriveServiceHelper
 import com.yogeshpaliyal.comrade.utils.GoogleSignInManager
 import com.yogeshpaliyal.comrade.worker.GDriveWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
+import data.ComradeBackup
 import data.ComradeBackupQueries
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.properties.Delegates
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val database: Database,
+    private val databaseProvider: DatabaseProvider,
     private val driveRepository: DriveRepository,
     private val googleSignInManager: GoogleSignInManager
 ) : ViewModel() {
 
-    val listOfBackupFiles = database.comradeBackupQueries.getAllFilesList().asFlow().mapToList(Dispatchers.IO)
+    private val database by databaseProvider
+
+    val listOfBackupFiles: MutableStateFlow<List<ComradeBackup>> = MutableStateFlow<List<ComradeBackup>>(listOf())
+
+    init {
+        viewModelScope.launch {
+            databaseProvider.databaseRefreshFlow.collect {
+                database.comradeBackupQueries.getAllFilesList().asFlow().mapToList(Dispatchers.IO)
+                    .collect {
+                        listOfBackupFiles.value = it
+                    }
+            }
+        }
+    }
+
+
 
     private var mGoogleServiceHelper: MutableStateFlow<DriveServiceHelper?> = MutableStateFlow(null)
 
