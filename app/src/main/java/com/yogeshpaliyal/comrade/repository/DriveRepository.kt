@@ -160,70 +160,16 @@ class DriveRepository @Inject constructor(
 
     private suspend fun downloadMissingBackups(driveServiceHelper: DriveServiceHelper) {
         try {
-            // Get backup folder
-            val folderId = driveServiceHelper.createFolderIfNotExists(BACKUP_FOLDER_NAME)
-
-            // Get all files from the Drive folder
-            val driveFiles = driveServiceHelper.listFilesInFolder(folderId)
-
             // Get all backup details from local database
             val localBackups = database.comradeBackupQueries.getAllFilesList().executeAsList()
-            val localFileNames = localBackups.map { it.fileName }
-
-            // Download files that exist on Drive but not locally
-            for (driveFile in driveFiles) {
-                if (!localFileNames.contains(driveFile.name)) {
-                    Log.d(TAG, "Found missing file on Drive: ${driveFile.name}")
-
-                    // Create local backup directory if it doesn't exist
-                    val backupDir = File(context.filesDir, "backups")
-                    if (!backupDir.exists()) {
-                        backupDir.mkdirs()
-                    }
-
-                    // Download the file
-                    val downloadedFile = File(backupDir, driveFile.name)
-                    driveServiceHelper.downloadFile(driveFile.id, downloadedFile)
-
-                    Log.d(TAG, "Downloaded missing file: ${driveFile.name}")
+            localBackups.forEach {
+                val file = File(it.localFilePath)
+                if (!file.exists() && it.fileId != null) {
+                    driveServiceHelper.downloadFile(it.fileId, file)
                 }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error downloading missing backups", e)
         }
-    }
-
-    private suspend fun restoreDatabaseFromDrive(driveServiceHelper: DriveServiceHelper, dbFile: File): Boolean {
-        try {
-            // Get the database folder on Drive
-            val dbFolderId = driveServiceHelper.createFolderIfNotExists(DB_FOLDER_NAME)
-
-            // Look for the database file
-            val driveFiles = driveServiceHelper.listFilesInFolder(dbFolderId)
-            val dbDriveFile = driveFiles.find { it.name == DB_FILE_NAME }
-
-            if (dbDriveFile != null) {
-                // Make sure the parent directory exists
-                dbFile.parentFile?.mkdirs()
-
-                // Download the database file
-                val success = driveServiceHelper.downloadFile(dbDriveFile.id, dbFile)
-                if (success) {
-                    Log.d(TAG, "Database file restored from Drive")
-                    return true
-                }
-            }
-            return false
-        } catch (e: Exception) {
-            Log.e(TAG, "Error restoring database from Drive", e)
-            return false
-        }
-    }
-
-    // Manually trigger a sync now
-    suspend fun syncNow(context: Context) {
-        syncAllBackups()
-        syncDatabaseFile(context)
-        downloadMissingFiles(context)
     }
 }
