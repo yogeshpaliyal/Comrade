@@ -3,17 +3,15 @@ package com.yogeshpaliyal.comrade.reciever
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.yogeshpaliyal.comrade.Database
 import com.yogeshpaliyal.comrade.common.CLIENT_APP_PACKAGE_NAME
 import com.yogeshpaliyal.comrade.common.IA_COMPANION_SETUP_COMPLETED
 import com.yogeshpaliyal.comrade.di.DatabaseProvider
-import com.yogeshpaliyal.comrade.reciever.handlers.BackupBroadcastHandler
-import com.yogeshpaliyal.comrade.reciever.handlers.GetBackupFileHandler
-import com.yogeshpaliyal.comrade.reciever.handlers.GetBackupFileStatusHandler
-import com.yogeshpaliyal.comrade.reciever.handlers.GetBackupFilesListHandler
-import com.yogeshpaliyal.comrade.reciever.handlers.IBroadcastReceiverHandler
+import com.yogeshpaliyal.comrade.reciever.handlers.backup.BackupBroadcastHandler
+import com.yogeshpaliyal.comrade.reciever.handlers.backup.GetBackupFileHandler
+import com.yogeshpaliyal.comrade.reciever.handlers.backup.GetBackupFileStatusHandler
+import com.yogeshpaliyal.comrade.reciever.handlers.backup.GetBackupFilesListHandler
+import com.yogeshpaliyal.comrade.reciever.handlers.firebase.FirebaseCrashHandler
 import dagger.hilt.android.AndroidEntryPoint
-import data.ComradeBackupQueries
 import javax.inject.Inject
 
 
@@ -42,6 +40,7 @@ class MainAppReceiver : BroadcastReceiver() {
             GetBackupFileHandler.ACTION -> GetBackupFileHandler()
             GetBackupFilesListHandler.ACTION -> GetBackupFilesListHandler()
             GetBackupFileStatusHandler.ACTION -> GetBackupFileStatusHandler()
+            FirebaseCrashHandler.ACTION -> FirebaseCrashHandler()
             else -> null
         }
 

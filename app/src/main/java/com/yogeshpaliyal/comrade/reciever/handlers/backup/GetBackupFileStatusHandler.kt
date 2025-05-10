@@ -1,9 +1,9 @@
-package com.yogeshpaliyal.comrade.reciever.handlers
+package com.yogeshpaliyal.comrade.reciever.handlers.backup
 
 import android.content.Context
 import android.content.Intent
-import com.yogeshpaliyal.comrade.common.IA_GET_BACKUP_FILE
 import com.yogeshpaliyal.comrade.common.IA_GET_BACKUP_FILE_STATUS
+import com.yogeshpaliyal.comrade.reciever.handlers.IBroadcastReceiverHandler
 import data.ComradeBackupQueries
 import javax.inject.Inject
 
