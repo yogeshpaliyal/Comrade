@@ -7,6 +7,10 @@ plugins {
     id("app.cash.sqldelight") version "2.0.2"
     // Kotlin serialization plugin for type safe routes and navigation arguments
     kotlin("plugin.serialization") version "2.0.21"
+    // Add the Google services Gradle plugin
+    id("com.google.gms.google-services")
+    // Add the Crashlytics Gradle plugin
+    id("com.google.firebase.crashlytics")
 }
 
 android {
@@ -105,6 +109,11 @@ dependencies {
     implementation(libs.androidx.hilt.work)
     // When using Kotlin.
     kapt(libs.androidx.hilt.compiler)
+    // Import the Firebase BoM
+    implementation(libs.firebase.bom)
+    // Add the dependency for the Firebase SDK for Google Analytics
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.crashlytics)
 }
 
 sqldelight {

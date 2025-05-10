@@ -2,6 +2,7 @@
 agp = "8.7.3"
 androidDriver = "2.0.2"
 coroutinesExtensions = "2.0.2"
+firebaseBom = "33.13.0"
 googleHttpClientGson = "1.42.1"
 hiltAndroid = "2.56.1"
 hiltAndroidCompiler = "2.55"
@@ -33,6 +34,9 @@ androidx-material = { module = "androidx.compose.material:material", version.ref
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialVersion" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
+firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 google-http-client-gson = { module = "com.google.http-client:google-http-client-gson", version.ref = "googleHttpClientGson" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroidCompiler" }
