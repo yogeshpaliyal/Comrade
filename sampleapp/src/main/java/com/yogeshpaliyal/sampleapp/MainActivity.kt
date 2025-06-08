@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Backup
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -43,6 +42,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.yogeshpaliyal.comrade.library.Comrade
+import com.yogeshpaliyal.comrade.library.ComradeCrashHandler
 import com.yogeshpaliyal.comrade.library.ComradeListener
 import com.yogeshpaliyal.sampleapp.ui.theme.BackupAppTheme
 import kotlinx.coroutines.launch
@@ -60,7 +60,7 @@ class MainActivity : ComponentActivity(), ComradeListener {
             BackupAppTheme {
                 SampleAppScreen(
                     isCompanionAppInstalled = comrade.isCompanionAppInstalled(),
-                    onBackupClick = { file -> 
+                    onBackupClick = { file ->
                         comrade.backupApp(file)
                     }
                 )
@@ -91,7 +91,7 @@ fun SampleAppScreen(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     var lastBackupTime by remember { mutableStateOf<String?>(null) }
-    
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -111,9 +111,20 @@ fun SampleAppScreen(
                 .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            Button(onClick = {
+                throw RuntimeException("Sample Crash 1234") // This will crash the app
+            }) {
+                Text("Crash App")
+            }
+
+            Button(onClick = {
+                ComradeCrashHandler.getInstance()?.log("Testing Crashlytics Event")
+            }) {
+                Text("Testing Crashlytics Event")
+            }
             // Status Card
             StatusCard(isCompanionAppInstalled = isCompanionAppInstalled)
-            
+
             // Last Backup Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -136,7 +147,7 @@ fun SampleAppScreen(
                     )
                 }
             }
-            
+
             // Backup Button Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -189,9 +200,9 @@ fun StatusCard(isCompanionAppInstalled: Boolean) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = if (isCompanionAppInstalled) 
-                MaterialTheme.colorScheme.primaryContainer 
-            else 
+            containerColor = if (isCompanionAppInstalled)
+                MaterialTheme.colorScheme.primaryContainer
+            else
                 MaterialTheme.colorScheme.errorContainer
         )
     ) {
@@ -204,7 +215,7 @@ fun StatusCard(isCompanionAppInstalled: Boolean) {
         ) {
             val icon: ImageVector
             val statusText: String
-            
+
             if (isCompanionAppInstalled) {
                 icon = Icons.Default.CheckCircle
                 statusText = "Companion App Installed"
@@ -212,23 +223,23 @@ fun StatusCard(isCompanionAppInstalled: Boolean) {
                 icon = Icons.Default.Warning
                 statusText = "Companion App Not Installed"
             }
-            
+
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = if (isCompanionAppInstalled) 
-                    MaterialTheme.colorScheme.primary 
-                else 
+                tint = if (isCompanionAppInstalled)
+                    MaterialTheme.colorScheme.primary
+                else
                     MaterialTheme.colorScheme.error,
                 modifier = Modifier.size(24.dp)
             )
-            
+
             Text(
                 text = statusText,
                 style = MaterialTheme.typography.titleMedium,
-                color = if (isCompanionAppInstalled) 
-                    MaterialTheme.colorScheme.onPrimaryContainer 
-                else 
+                color = if (isCompanionAppInstalled)
+                    MaterialTheme.colorScheme.onPrimaryContainer
+                else
                     MaterialTheme.colorScheme.onErrorContainer
             )
         }

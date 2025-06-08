@@ -10,6 +10,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.yogeshpaliyal.comrade.common.CLIENT_APP_PACKAGE_NAME
 import com.yogeshpaliyal.comrade.common.COMPANION_APP_PACKAGE_NAME
+import com.yogeshpaliyal.comrade.common.FIREBASE_ERROR
+import com.yogeshpaliyal.comrade.common.FIREBASE_EVENT_TYPE
 import com.yogeshpaliyal.comrade.common.IA_BACKUP_ADDED_TO_QUEUE
 import com.yogeshpaliyal.comrade.common.IA_BACKUP_REQUEST
 import com.yogeshpaliyal.comrade.common.IA_COMPANION_SETUP_COMPLETED
@@ -27,6 +29,18 @@ class Comrade(private val mContext: Context, private val mListener: ComradeListe
                 IA_COMPANION_SETUP_COMPLETED -> mListener.comradeIsNotConfigured()
             }
         }
+    }
+
+    init {
+        val intentFilter = IntentFilter()
+        intentFilter.addAction(IA_COMPANION_SETUP_COMPLETED)
+        intentFilter.addAction(IA_BACKUP_ADDED_TO_QUEUE)
+        ContextCompat.registerReceiver(
+            mContext,
+            myBroadcastReceiver,
+            intentFilter,
+            ContextCompat.RECEIVER_EXPORTED
+        )
     }
 
     override fun backupApp(file: File) {
@@ -49,26 +63,16 @@ class Comrade(private val mContext: Context, private val mListener: ComradeListe
         )
 
 
-        val intent = Intent()
-        intent.component = ComponentName(
-            COMPANION_APP_PACKAGE_NAME,
-            "com.yogeshpaliyal.comrade.reciever.MainAppReceiver"
-        )
-        intent.action = IA_BACKUP_REQUEST
-        intent.`package` = COMPANION_APP_PACKAGE_NAME
-        intent.putExtra(CLIENT_APP_PACKAGE_NAME, mContext.packageName)
+        val intent = createComradeInitialIntent(mContext, IA_BACKUP_REQUEST)
         intent.putExtra(SHARING_CONTENT_URI, contentUri.toString())
         mContext.sendBroadcast(intent)
 
-        val intentFilter = IntentFilter()
-        intentFilter.addAction(IA_COMPANION_SETUP_COMPLETED)
-        intentFilter.addAction(IA_BACKUP_ADDED_TO_QUEUE)
-        ContextCompat.registerReceiver(
-            mContext,
-            myBroadcastReceiver,
-            intentFilter,
-            ContextCompat.RECEIVER_EXPORTED
-        )
+    }
+
+    override fun recordError(throwable: Throwable) {
+        val intent = Intent()
+        intent.action = FIREBASE_ERROR
+        intent.`package` = COMPANION_APP_PACKAGE_NAME
 
     }
 
